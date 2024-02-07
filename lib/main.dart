@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/src/pages/print_page.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(blprint());
 }
 
 class MyApp extends StatefulWidget {
@@ -32,11 +33,14 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> setConnect(String mac) async {
     final String? result = await BluetoothThermalPrinter.connect(mac);
+    final String? result2 = await BluetoothThermalPrinter.connectionStatus;
     print("state conneected $result");
     if (result == "true") {
       setState(() {
         connected = true;
       });
+    } else {
+      print('result2  $result2');
     }
   }
 
@@ -47,6 +51,7 @@ class _MyAppState extends State<MyApp> {
       final result = await BluetoothThermalPrinter.writeBytes(bytes);
       print("Print $result");
     } else {
+      print('not connected');
       //Hadnle Not Connected Senario
     }
   }
@@ -237,6 +242,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData.dark(),
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Bluetooth Thermal Printer Demo'),
@@ -288,6 +295,7 @@ class _MyAppState extends State<MyApp> {
             ],
           ),
         ),
+        floatingActionButton: FloatingActionButton(onPressed: () {}),
       ),
     );
   }
