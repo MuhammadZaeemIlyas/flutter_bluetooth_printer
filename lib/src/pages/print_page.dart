@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_2/main.dart';
 import 'package:flutter_application_2/src/pages/testprint.dart';
 
 class blprint extends StatefulWidget {
@@ -101,6 +102,8 @@ class _blprintState extends State<blprint> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(),
       home: Scaffold(
         appBar: AppBar(
           title: Text('Blue Thermal Printer'),
