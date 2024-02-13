@@ -1,12 +1,14 @@
 import 'dart:async';
-
+import 'dart:io';
+import 'package:image/image.dart' as img;
 import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_2/src/pages/print_page.dart';
 
 void main() {
-  runApp(blprint());
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -47,7 +49,8 @@ class _MyAppState extends State<MyApp> {
   Future<void> printTicket() async {
     String? isConnected = await BluetoothThermalPrinter.connectionStatus;
     if (isConnected == "true") {
-      List<int> bytes = await getTicket();
+      CapabilityProfile profile = await CapabilityProfile.load();
+      List<int> bytes = await testTicket(PaperSize.mm58, profile);
       final result = await BluetoothThermalPrinter.writeBytes(bytes);
       print("Print $result");
     } else {
@@ -87,6 +90,79 @@ class _MyAppState extends State<MyApp> {
     return bytes;
   }
 
+  Future<List<int>> testTicket(
+      PaperSize paper, CapabilityProfile profile) async {
+    final Generator generator = Generator(paper, profile);
+    List<int> bytes = [];
+
+    bytes += generator.text(
+        'Regular: aA bB cC dD eE fF gG hH iI jJ kK lL mM nN oO pP qQ rR sS tT uU vV wW xX yY zZ');
+    // bytes += generator.text('Special 1: àÀ èÈ éÉ ûÛ üÜ çÇ ôÔ',
+    //     styles: PosStyles(codeTable: PosCodeTable.westEur));
+    // bytes += generator.text('Special 2: blåbærgrød',
+    //     styles: PosStyles(codeTable: PosCodeTable.westEur));
+
+    bytes += generator.text('Bold text', styles: PosStyles(bold: true));
+    bytes += generator.text('Reverse text', styles: PosStyles(reverse: true));
+    bytes += generator.text('Underlined text',
+        styles: PosStyles(underline: true), linesAfter: 1);
+    bytes +=
+        generator.text('Align left', styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('Align center',
+        styles: PosStyles(align: PosAlign.center));
+    bytes += generator.text('Align right',
+        styles: PosStyles(align: PosAlign.right), linesAfter: 1);
+
+    bytes += generator.row([
+      PosColumn(
+        text: 'col3',
+        width: 3,
+        styles: PosStyles(align: PosAlign.center, underline: true),
+      ),
+      PosColumn(
+        text: 'col6',
+        width: 6,
+        styles: PosStyles(align: PosAlign.center, underline: true),
+      ),
+      PosColumn(
+        text: 'col3',
+        width: 3,
+        styles: PosStyles(align: PosAlign.center, underline: true),
+      ),
+    ]);
+
+    bytes += generator.text('Text size 200%',
+        styles: PosStyles(
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        ));
+
+    // Print image
+    final ByteData data = await rootBundle.load('assets/images/download.png');
+    final Uint8List buf = data.buffer.asUint8List();
+    final img.Image image = img.decodeImage(buf)!;
+    bytes += generator.image(image);
+    // Print image using alternative commands
+    // bytes += generator.imageRaster(image);
+    // bytes += generator.imageRaster(image, imageFn: PosImageFn.graphics);
+
+    // Print barcode
+    final List<int> barData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 4];
+    bytes += generator.barcode(Barcode.upcA(barData));
+
+    // Print mixed (chinese + latin) text. Only for printers supporting Kanji mode
+    // bytes += generator.text(
+    //   'hello ! 中文字 # world @ éphémère &',
+    //   styles: PosStyles(codeTable: PosCodeTable.westEur),
+    //   containsChinese: true,
+    // );
+
+    bytes += generator.feed(2);
+
+    bytes += generator.cut();
+    return bytes;
+  }
+
   Future<List<int>> getTicket() async {
     List<int> bytes = [];
     CapabilityProfile profile = await CapabilityProfile.load();
@@ -99,6 +175,14 @@ class _MyAppState extends State<MyApp> {
           width: PosTextSize.size2,
         ),
         linesAfter: 1);
+
+//     final ByteData data = await rootBundle.load('assets/images/download.png');
+//     final Uint8List bytes2 = data.buffer.asUint8List();
+//     final img.Image image1 = img.decodeImage(bytes2)!;
+// // Using `ESC *`
+// //    generator.image(image1);
+//     //  generator.imageRaster(image1);
+//     generator.imageRaster(image1, imageFn: PosImageFn.graphics);
 
     bytes += generator.text(
         "18th Main Road, 2nd Phase, J. P. Nagar, Bengaluru, Karnataka 560078",
@@ -291,6 +375,12 @@ class _MyAppState extends State<MyApp> {
               TextButton(
                 onPressed: connected ? this.printTicket : null,
                 child: Text("Print Ticket"),
+              ),
+              TextButton(
+                onPressed: () {
+                  //  getimage();
+                },
+                child: Text("Print Ticket 2"),
               ),
             ],
           ),

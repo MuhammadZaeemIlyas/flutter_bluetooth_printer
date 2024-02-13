@@ -6,6 +6,8 @@ import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_2/main.dart';
 import 'package:flutter_application_2/src/pages/testprint.dart';
+import 'package:image/image.dart';
+import 'package:image/image.dart' as img;
 
 class blprint extends StatefulWidget {
   @override
