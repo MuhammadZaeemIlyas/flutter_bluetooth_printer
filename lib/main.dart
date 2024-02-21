@@ -24,6 +24,15 @@ class _MyAppState extends State<MyApp> {
 
   bool connected = false;
   List availableBluetoothDevices = [];
+  String _customerName = 'Faisal Ismail';
+  String _Receiptno = '101359';
+  String _ReceiptDate = '21/2/2024';
+  String _Amount = '156900';
+  String _bank = 'Meezan';
+  String _chequeNO = '789456';
+  String _donationtype = 'SADQA FOR KARACHI IDARA';
+  String _user = 'farhan';
+  String _Datetime = '21/2/2024  11:01 AM';
 
   Future<void> getBluetooth() async {
     final List? bluetooths = await BluetoothThermalPrinter.getBluetooths;
@@ -50,7 +59,7 @@ class _MyAppState extends State<MyApp> {
     String? isConnected = await BluetoothThermalPrinter.connectionStatus;
     if (isConnected == "true") {
       CapabilityProfile profile = await CapabilityProfile.load();
-      List<int> bytes = await testTicket(PaperSize.mm58, profile);
+      List<int> bytes = await getTicket2();
       final result = await BluetoothThermalPrinter.writeBytes(bytes);
       print("Print $result");
     } else {
@@ -138,7 +147,7 @@ class _MyAppState extends State<MyApp> {
         ));
 
     // Print image
-    final ByteData data = await rootBundle.load('assets/images/download.png');
+    final ByteData data = await rootBundle.load('assets/images/thermal.jpg');
     final Uint8List buf = data.buffer.asUint8List();
     final img.Image image = img.decodeImage(buf)!;
     bytes += generator.image(image);
@@ -319,6 +328,208 @@ class _MyAppState extends State<MyApp> {
     bytes += generator.text(
         'Note: Goods once sold will not be taken back or exchanged.',
         styles: PosStyles(align: PosAlign.center, bold: false));
+    bytes += generator.cut();
+    return bytes;
+  }
+
+  Future<List<int>> getTicket2() async {
+    List<int> bytes = [];
+    CapabilityProfile profile = await CapabilityProfile.load();
+    final generator = Generator(PaperSize.mm80, profile);
+
+    // bytes += generator.text("    ",
+    //     styles: PosStyles(
+    //       align: PosAlign.center,
+    //       height: PosTextSize.size2,
+    //       width: PosTextSize.size2,
+    //     ),
+    //     linesAfter: 1);
+
+    try {
+      print('image k ly aya ho');
+      final ByteData data = await rootBundle.load('assets/images/thermal.jpg');
+      final Uint8List buf = data.buffer.asUint8List();
+      final img.Image image = img.decodeImage(buf)!;
+      bytes += generator.image(image);
+      print('ban gayi h');
+    } catch (e) {
+      print(e);
+      print('image nhi ayi ho');
+    }
+
+// // Using `ESC *`
+// //    generator.image(image1);
+//     //  generator.imageRaster(image1);
+//     generator.imageRaster(image1, imageFn: PosImageFn.graphics);
+
+    bytes += generator.text("Receipt No    :    $_Receiptno",
+        styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('Receipt Date  :    $_ReceiptDate',
+        styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('Received From :    $_customerName',
+        styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('Total Rupees  :    $_Amount',
+        styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('Donation Type :    $_donationtype',
+        styles: PosStyles(align: PosAlign.left));
+
+    bytes += generator.hr();
+    bytes += generator.row([
+      // PosColumn(
+      //     text: '',
+      //     width: 1,
+      //     styles: PosStyles(align: PosAlign.left, bold: true)),
+      PosColumn(
+          text: 'Chq No  ',
+          width: 3,
+          styles: PosStyles(align: PosAlign.left, bold: true)),
+      PosColumn(
+          text: 'Date       ',
+          width: 3,
+          styles: PosStyles(align: PosAlign.center, bold: true)),
+      PosColumn(
+          text: 'Bank ',
+          width: 3,
+          styles: PosStyles(align: PosAlign.center, bold: true)),
+      PosColumn(
+          text: 'Amount  ',
+          width: 3,
+          styles: PosStyles(align: PosAlign.right, bold: true)),
+    ]);
+
+    bytes += generator.hr();
+    bytes += generator.row([
+      PosColumn(
+          text: "$_chequeNO",
+          width: 3,
+          styles: PosStyles(
+            align: PosAlign.left,
+          )),
+      PosColumn(
+          text: "$_ReceiptDate  ",
+          width: 3,
+          styles: PosStyles(
+            align: PosAlign.center,
+          )),
+      PosColumn(
+          text: "  $_bank",
+          width: 3,
+          styles: PosStyles(align: PosAlign.center)),
+      PosColumn(
+          text: "$_Amount  ",
+          width: 3,
+          styles: PosStyles(align: PosAlign.right)),
+    ]);
+
+    bytes += generator.hr();
+
+    bytes += generator.text('                                         ',
+        styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('Bank Name     : United Bank Limited (UBL)',
+        styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('Branch Code   : 1679',
+        styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('Swift Code    : UNILPKKA',
+        styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('IBAN          : PK41 UNIL 0109 0002 4523 8264',
+        styles: PosStyles(align: PosAlign.left));
+
+    bytes += generator.hr();
+
+    // bytes += generator.text(
+    //     "Note : Receipt valid request to realization            of Cheque",
+    //     styles: PosStyles(align: PosAlign.left));
+    bytes += generator.text('User          : $_user',
+        styles: PosStyles(height: PosTextSize.size1, align: PosAlign.left));
+    bytes += generator.text('Date & Time   : $_Datetime',
+        styles: PosStyles(height: PosTextSize.size1, align: PosAlign.left));
+    // bytes += generator.row([
+    //   PosColumn(text: "2", width: 1),
+    //   PosColumn(
+    //       text: "Sada Dosa",
+    //       width: 5,
+    //       styles: PosStyles(
+    //         align: PosAlign.left,
+    //       )),
+    //   PosColumn(
+    //       text: "30",
+    //       width: 2,
+    //       styles: PosStyles(
+    //         align: PosAlign.center,
+    //       )),
+    //   PosColumn(text: "1", width: 2, styles: PosStyles(align: PosAlign.center)),
+    //   PosColumn(text: "30", width: 2, styles: PosStyles(align: PosAlign.right)),
+    // ]);
+
+    // bytes += generator.row([
+    //   PosColumn(text: "3", width: 1),
+    //   PosColumn(
+    //       text: "Masala Dosa",
+    //       width: 5,
+    //       styles: PosStyles(
+    //         align: PosAlign.left,
+    //       )),
+    //   PosColumn(
+    //       text: "50",
+    //       width: 2,
+    //       styles: PosStyles(
+    //         align: PosAlign.center,
+    //       )),
+    //   PosColumn(text: "1", width: 2, styles: PosStyles(align: PosAlign.center)),
+    //   PosColumn(text: "50", width: 2, styles: PosStyles(align: PosAlign.right)),
+    // ]);
+
+    // bytes += generator.row([
+    //   PosColumn(text: "4", width: 1),
+    //   PosColumn(
+    //       text: "Rova Dosa",
+    //       width: 5,
+    //       styles: PosStyles(
+    //         align: PosAlign.left,
+    //       )),
+    //   PosColumn(
+    //       text: "70",
+    //       width: 2,
+    //       styles: PosStyles(
+    //         align: PosAlign.center,
+    //       )),
+    //   PosColumn(text: "1", width: 2, styles: PosStyles(align: PosAlign.center)),
+    //   PosColumn(text: "70", width: 2, styles: PosStyles(align: PosAlign.right)),
+    // ]);
+
+    // bytes += generator.hr();
+
+    // bytes += generator.row([
+    //   PosColumn(
+    //       text: 'TOTAL',
+    //       width: 6,
+    //       styles: PosStyles(
+    //         align: PosAlign.left,
+    //         height: PosTextSize.size4,
+    //         width: PosTextSize.size4,
+    //       )),
+    //   PosColumn(
+    //       text: "160",
+    //       width: 6,
+    //       styles: PosStyles(
+    //         align: PosAlign.right,
+    //         height: PosTextSize.size4,
+    //         width: PosTextSize.size4,
+    //       )),
+    // ]);
+
+    // bytes += generator.hr(ch: '=', linesAfter: 1);
+
+    // // ticket.feed(2);
+    // bytes += generator.text('Thank you!',
+    //     styles: PosStyles(align: PosAlign.center, bold: true));
+
+    // bytes += generator.text("26-11-2020 15:22:45",
+    //     styles: PosStyles(align: PosAlign.center), linesAfter: 1);
+
+    // bytes += generator.text(
+    //     'Note: Goods once sold will not be taken back or exchanged.',
+    //     styles: PosStyles(align: PosAlign.center, bold: false));
     bytes += generator.cut();
     return bytes;
   }
